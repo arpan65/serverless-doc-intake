@@ -1,0 +1,667 @@
+{
+  "version": "tree-0.1",
+  "tree": {
+    "id": "App",
+    "path": "",
+    "children": {
+      "Tree": {
+        "id": "Tree",
+        "path": "Tree",
+        "constructInfo": {
+          "fqn": "constructs.Construct",
+          "version": "10.1.269"
+        }
+      },
+      "InitStack": {
+        "id": "InitStack",
+        "path": "InitStack",
+        "children": {
+          "doc-intake-bucket": {
+            "id": "doc-intake-bucket",
+            "path": "InitStack/doc-intake-bucket",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "InitStack/doc-intake-bucket/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::S3::Bucket",
+                  "aws:cdk:cloudformation:props": {
+                    "bucketName": "loss-intake-bucket-non-prod",
+                    "publicAccessBlockConfiguration": {
+                      "blockPublicAcls": true,
+                      "blockPublicPolicy": true,
+                      "ignorePublicAcls": true,
+                      "restrictPublicBuckets": true
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3.CfnBucket",
+                  "version": "2.41.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_s3.Bucket",
+              "version": "2.41.0"
+            }
+          },
+          "doc-upload-role": {
+            "id": "doc-upload-role",
+            "path": "InitStack/doc-upload-role",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "InitStack/doc-upload-role/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                  "aws:cdk:cloudformation:props": {
+                    "assumeRolePolicyDocument": {
+                      "Statement": [
+                        {
+                          "Action": "sts:AssumeRole",
+                          "Effect": "Allow",
+                          "Principal": {
+                            "Service": "lambda.amazonaws.com"
+                          }
+                        }
+                      ],
+                      "Version": "2012-10-17"
+                    },
+                    "managedPolicyArns": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+                          ]
+                        ]
+                      }
+                    ],
+                    "roleName": "lambda-doc-upload-role"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                  "version": "2.41.0"
+                }
+              },
+              "DefaultPolicy": {
+                "id": "DefaultPolicy",
+                "path": "InitStack/doc-upload-role/DefaultPolicy",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "InitStack/doc-upload-role/DefaultPolicy/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
+                      "aws:cdk:cloudformation:props": {
+                        "policyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "s3:*",
+                              "Effect": "Allow",
+                              "Resource": "*"
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        },
+                        "policyName": "docuploadroleDefaultPolicyBA65F4AA",
+                        "roles": [
+                          {
+                            "Ref": "docuploadrole54E89873"
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
+                      "version": "2.41.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Policy",
+                  "version": "2.41.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_iam.Role",
+              "version": "2.41.0"
+            }
+          },
+          "doc-upload-lambda": {
+            "id": "doc-upload-lambda",
+            "path": "InitStack/doc-upload-lambda",
+            "children": {
+              "Code": {
+                "id": "Code",
+                "path": "InitStack/doc-upload-lambda/Code",
+                "children": {
+                  "Stage": {
+                    "id": "Stage",
+                    "path": "InitStack/doc-upload-lambda/Code/Stage",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.AssetStaging",
+                      "version": "2.41.0"
+                    }
+                  },
+                  "AssetBucket": {
+                    "id": "AssetBucket",
+                    "path": "InitStack/doc-upload-lambda/Code/AssetBucket",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_s3.BucketBase",
+                      "version": "2.41.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3_assets.Asset",
+                  "version": "2.41.0"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "InitStack/doc-upload-lambda/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Function",
+                  "aws:cdk:cloudformation:props": {
+                    "code": {
+                      "s3Bucket": {
+                        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+                      },
+                      "s3Key": "a57ee8bc5f1d49627f12b7832365cf14d4a101edc9078fc5fbbcaba286730081.zip"
+                    },
+                    "role": {
+                      "Fn::GetAtt": [
+                        "docuploadrole54E89873",
+                        "Arn"
+                      ]
+                    },
+                    "environment": {
+                      "variables": {
+                        "S3_BUCKET_NAME": {
+                          "Ref": "docintakebucket7A9CA393"
+                        }
+                      }
+                    },
+                    "functionName": "doc-upload-lambda",
+                    "handler": "doc_upload.execute",
+                    "runtime": "python3.9"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnFunction",
+                  "version": "2.41.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_lambda.Function",
+              "version": "2.41.0"
+            }
+          },
+          "doc-intake-api": {
+            "id": "doc-intake-api",
+            "path": "InitStack/doc-intake-api",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "InitStack/doc-intake-api/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ApiGateway::RestApi",
+                  "aws:cdk:cloudformation:props": {
+                    "name": "doc-intake-api"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_apigateway.CfnRestApi",
+                  "version": "2.41.0"
+                }
+              },
+              "Deployment": {
+                "id": "Deployment",
+                "path": "InitStack/doc-intake-api/Deployment",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "InitStack/doc-intake-api/Deployment/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::ApiGateway::Deployment",
+                      "aws:cdk:cloudformation:props": {
+                        "restApiId": {
+                          "Ref": "docintakeapi712103E8"
+                        },
+                        "description": "Automatically created by the RestApi construct"
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_apigateway.CfnDeployment",
+                      "version": "2.41.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_apigateway.Deployment",
+                  "version": "2.41.0"
+                }
+              },
+              "DeploymentStage.dev": {
+                "id": "DeploymentStage.dev",
+                "path": "InitStack/doc-intake-api/DeploymentStage.dev",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "InitStack/doc-intake-api/DeploymentStage.dev/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::ApiGateway::Stage",
+                      "aws:cdk:cloudformation:props": {
+                        "restApiId": {
+                          "Ref": "docintakeapi712103E8"
+                        },
+                        "deploymentId": {
+                          "Ref": "docintakeapiDeploymentF48461DA54c91c721c560af9bd1aeb8989045ad8"
+                        },
+                        "stageName": "dev"
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_apigateway.CfnStage",
+                      "version": "2.41.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_apigateway.Stage",
+                  "version": "2.41.0"
+                }
+              },
+              "Endpoint": {
+                "id": "Endpoint",
+                "path": "InitStack/doc-intake-api/Endpoint",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnOutput",
+                  "version": "2.41.0"
+                }
+              },
+              "Default": {
+                "id": "Default",
+                "path": "InitStack/doc-intake-api/Default",
+                "children": {
+                  "v1": {
+                    "id": "v1",
+                    "path": "InitStack/doc-intake-api/Default/v1",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "InitStack/doc-intake-api/Default/v1/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::ApiGateway::Resource",
+                          "aws:cdk:cloudformation:props": {
+                            "parentId": {
+                              "Fn::GetAtt": [
+                                "docintakeapi712103E8",
+                                "RootResourceId"
+                              ]
+                            },
+                            "pathPart": "v1",
+                            "restApiId": {
+                              "Ref": "docintakeapi712103E8"
+                            }
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_apigateway.CfnResource",
+                          "version": "2.41.0"
+                        }
+                      },
+                      "upload": {
+                        "id": "upload",
+                        "path": "InitStack/doc-intake-api/Default/v1/upload",
+                        "children": {
+                          "Resource": {
+                            "id": "Resource",
+                            "path": "InitStack/doc-intake-api/Default/v1/upload/Resource",
+                            "attributes": {
+                              "aws:cdk:cloudformation:type": "AWS::ApiGateway::Resource",
+                              "aws:cdk:cloudformation:props": {
+                                "parentId": {
+                                  "Ref": "docintakeapiv1DE1BDEB5"
+                                },
+                                "pathPart": "upload",
+                                "restApiId": {
+                                  "Ref": "docintakeapi712103E8"
+                                }
+                              }
+                            },
+                            "constructInfo": {
+                              "fqn": "aws-cdk-lib.aws_apigateway.CfnResource",
+                              "version": "2.41.0"
+                            }
+                          },
+                          "POST": {
+                            "id": "POST",
+                            "path": "InitStack/doc-intake-api/Default/v1/upload/POST",
+                            "children": {
+                              "ApiPermission.InitStackdocintakeapi512A6CBD.POST..v1.upload": {
+                                "id": "ApiPermission.InitStackdocintakeapi512A6CBD.POST..v1.upload",
+                                "path": "InitStack/doc-intake-api/Default/v1/upload/POST/ApiPermission.InitStackdocintakeapi512A6CBD.POST..v1.upload",
+                                "attributes": {
+                                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                                  "aws:cdk:cloudformation:props": {
+                                    "action": "lambda:InvokeFunction",
+                                    "functionName": {
+                                      "Fn::GetAtt": [
+                                        "docuploadlambda1289EE69",
+                                        "Arn"
+                                      ]
+                                    },
+                                    "principal": "apigateway.amazonaws.com",
+                                    "sourceArn": {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          "arn:",
+                                          {
+                                            "Ref": "AWS::Partition"
+                                          },
+                                          ":execute-api:",
+                                          {
+                                            "Ref": "AWS::Region"
+                                          },
+                                          ":",
+                                          {
+                                            "Ref": "AWS::AccountId"
+                                          },
+                                          ":",
+                                          {
+                                            "Ref": "docintakeapi712103E8"
+                                          },
+                                          "/",
+                                          {
+                                            "Ref": "docintakeapiDeploymentStagedev2EEE2380"
+                                          },
+                                          "/POST/v1/upload"
+                                        ]
+                                      ]
+                                    }
+                                  }
+                                },
+                                "constructInfo": {
+                                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
+                                  "version": "2.41.0"
+                                }
+                              },
+                              "ApiPermission.Test.InitStackdocintakeapi512A6CBD.POST..v1.upload": {
+                                "id": "ApiPermission.Test.InitStackdocintakeapi512A6CBD.POST..v1.upload",
+                                "path": "InitStack/doc-intake-api/Default/v1/upload/POST/ApiPermission.Test.InitStackdocintakeapi512A6CBD.POST..v1.upload",
+                                "attributes": {
+                                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                                  "aws:cdk:cloudformation:props": {
+                                    "action": "lambda:InvokeFunction",
+                                    "functionName": {
+                                      "Fn::GetAtt": [
+                                        "docuploadlambda1289EE69",
+                                        "Arn"
+                                      ]
+                                    },
+                                    "principal": "apigateway.amazonaws.com",
+                                    "sourceArn": {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          "arn:",
+                                          {
+                                            "Ref": "AWS::Partition"
+                                          },
+                                          ":execute-api:",
+                                          {
+                                            "Ref": "AWS::Region"
+                                          },
+                                          ":",
+                                          {
+                                            "Ref": "AWS::AccountId"
+                                          },
+                                          ":",
+                                          {
+                                            "Ref": "docintakeapi712103E8"
+                                          },
+                                          "/test-invoke-stage/POST/v1/upload"
+                                        ]
+                                      ]
+                                    }
+                                  }
+                                },
+                                "constructInfo": {
+                                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
+                                  "version": "2.41.0"
+                                }
+                              },
+                              "Resource": {
+                                "id": "Resource",
+                                "path": "InitStack/doc-intake-api/Default/v1/upload/POST/Resource",
+                                "attributes": {
+                                  "aws:cdk:cloudformation:type": "AWS::ApiGateway::Method",
+                                  "aws:cdk:cloudformation:props": {
+                                    "httpMethod": "POST",
+                                    "resourceId": {
+                                      "Ref": "docintakeapiv1upload6435CA45"
+                                    },
+                                    "restApiId": {
+                                      "Ref": "docintakeapi712103E8"
+                                    },
+                                    "apiKeyRequired": true,
+                                    "authorizationType": "NONE",
+                                    "integration": {
+                                      "type": "AWS_PROXY",
+                                      "uri": {
+                                        "Fn::Join": [
+                                          "",
+                                          [
+                                            "arn:",
+                                            {
+                                              "Ref": "AWS::Partition"
+                                            },
+                                            ":apigateway:",
+                                            {
+                                              "Ref": "AWS::Region"
+                                            },
+                                            ":lambda:path/2015-03-31/functions/",
+                                            {
+                                              "Fn::GetAtt": [
+                                                "docuploadlambda1289EE69",
+                                                "Arn"
+                                              ]
+                                            },
+                                            "/invocations"
+                                          ]
+                                        ]
+                                      },
+                                      "integrationHttpMethod": "POST"
+                                    }
+                                  }
+                                },
+                                "constructInfo": {
+                                  "fqn": "aws-cdk-lib.aws_apigateway.CfnMethod",
+                                  "version": "2.41.0"
+                                }
+                              }
+                            },
+                            "constructInfo": {
+                              "fqn": "aws-cdk-lib.aws_apigateway.Method",
+                              "version": "2.41.0"
+                            }
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_apigateway.Resource",
+                          "version": "2.41.0"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_apigateway.Resource",
+                      "version": "2.41.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_apigateway.ResourceBase",
+                  "version": "2.41.0"
+                }
+              },
+              "DocIntakeUsagePlan": {
+                "id": "DocIntakeUsagePlan",
+                "path": "InitStack/doc-intake-api/DocIntakeUsagePlan",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "InitStack/doc-intake-api/DocIntakeUsagePlan/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::ApiGateway::UsagePlan",
+                      "aws:cdk:cloudformation:props": {
+                        "apiStages": [
+                          {
+                            "apiId": {
+                              "Ref": "docintakeapi712103E8"
+                            },
+                            "stage": {
+                              "Ref": "docintakeapiDeploymentStagedev2EEE2380"
+                            },
+                            "throttle": {}
+                          }
+                        ],
+                        "throttle": {
+                          "burstLimit": 2,
+                          "rateLimit": 10
+                        },
+                        "usagePlanName": "doc-intake-usage-plan"
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_apigateway.CfnUsagePlan",
+                      "version": "2.41.0"
+                    }
+                  },
+                  "UsagePlanKeyResource:InitStackdocintakeapiApiKeyA044AF9F": {
+                    "id": "UsagePlanKeyResource:InitStackdocintakeapiApiKeyA044AF9F",
+                    "path": "InitStack/doc-intake-api/DocIntakeUsagePlan/UsagePlanKeyResource:InitStackdocintakeapiApiKeyA044AF9F",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::ApiGateway::UsagePlanKey",
+                      "aws:cdk:cloudformation:props": {
+                        "keyId": {
+                          "Ref": "docintakeapiApiKey76FA0A6C"
+                        },
+                        "keyType": "API_KEY",
+                        "usagePlanId": {
+                          "Ref": "docintakeapiDocIntakeUsagePlan53542426"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_apigateway.CfnUsagePlanKey",
+                      "version": "2.41.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_apigateway.UsagePlan",
+                  "version": "2.41.0"
+                }
+              },
+              "ApiKey": {
+                "id": "ApiKey",
+                "path": "InitStack/doc-intake-api/ApiKey",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "InitStack/doc-intake-api/ApiKey/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::ApiGateway::ApiKey",
+                      "aws:cdk:cloudformation:props": {
+                        "enabled": true,
+                        "stageKeys": [
+                          {
+                            "restApiId": {
+                              "Ref": "docintakeapi712103E8"
+                            },
+                            "stageName": {
+                              "Ref": "docintakeapiDeploymentStagedev2EEE2380"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_apigateway.CfnApiKey",
+                      "version": "2.41.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_apigateway.ApiKey",
+                  "version": "2.41.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_apigateway.RestApi",
+              "version": "2.41.0"
+            }
+          },
+          "CDKMetadata": {
+            "id": "CDKMetadata",
+            "path": "InitStack/CDKMetadata",
+            "children": {
+              "Default": {
+                "id": "Default",
+                "path": "InitStack/CDKMetadata/Default",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnResource",
+                  "version": "2.41.0"
+                }
+              },
+              "Condition": {
+                "id": "Condition",
+                "path": "InitStack/CDKMetadata/Condition",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnCondition",
+                  "version": "2.41.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "constructs.Construct",
+              "version": "10.1.269"
+            }
+          }
+        },
+        "constructInfo": {
+          "fqn": "aws-cdk-lib.Stack",
+          "version": "2.41.0"
+        }
+      }
+    },
+    "constructInfo": {
+      "fqn": "aws-cdk-lib.App",
+      "version": "2.41.0"
+    }
+  }
+}

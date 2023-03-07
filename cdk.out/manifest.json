@@ -1,0 +1,166 @@
+{
+  "version": "21.0.0",
+  "artifacts": {
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    },
+    "InitStack.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "InitStack.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "InitStack": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/unknown-region",
+      "properties": {
+        "templateFile": "InitStack.template.json",
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/2e6ee42b80e42e8cb941495d36eef311401e4f30d53c2259d5d41d7e32ffa1f9.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "InitStack.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "InitStack.assets"
+      ],
+      "metadata": {
+        "/InitStack/doc-intake-bucket/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docintakebucket7A9CA393"
+          }
+        ],
+        "/InitStack/doc-upload-role/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docuploadrole54E89873"
+          }
+        ],
+        "/InitStack/doc-upload-role/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docuploadroleDefaultPolicyBA65F4AA"
+          }
+        ],
+        "/InitStack/doc-upload-lambda/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docuploadlambda1289EE69"
+          }
+        ],
+        "/InitStack/doc-intake-api/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docintakeapi712103E8"
+          }
+        ],
+        "/InitStack/doc-intake-api/Deployment/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docintakeapiDeploymentF48461DA54c91c721c560af9bd1aeb8989045ad8"
+          }
+        ],
+        "/InitStack/doc-intake-api/DeploymentStage.dev/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docintakeapiDeploymentStagedev2EEE2380"
+          }
+        ],
+        "/InitStack/doc-intake-api/Endpoint": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docintakeapiEndpoint7384FAE0"
+          }
+        ],
+        "/InitStack/doc-intake-api/Default/v1/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docintakeapiv1DE1BDEB5"
+          }
+        ],
+        "/InitStack/doc-intake-api/Default/v1/upload/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docintakeapiv1upload6435CA45"
+          }
+        ],
+        "/InitStack/doc-intake-api/Default/v1/upload/POST/ApiPermission.InitStackdocintakeapi512A6CBD.POST..v1.upload": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docintakeapiv1uploadPOSTApiPermissionInitStackdocintakeapi512A6CBDPOSTv1uploadECD603C2"
+          }
+        ],
+        "/InitStack/doc-intake-api/Default/v1/upload/POST/ApiPermission.Test.InitStackdocintakeapi512A6CBD.POST..v1.upload": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docintakeapiv1uploadPOSTApiPermissionTestInitStackdocintakeapi512A6CBDPOSTv1upload16298897"
+          }
+        ],
+        "/InitStack/doc-intake-api/Default/v1/upload/POST/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docintakeapiv1uploadPOSTFF4FB0F0"
+          }
+        ],
+        "/InitStack/doc-intake-api/DocIntakeUsagePlan/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docintakeapiDocIntakeUsagePlan53542426"
+          }
+        ],
+        "/InitStack/doc-intake-api/DocIntakeUsagePlan/UsagePlanKeyResource:InitStackdocintakeapiApiKeyA044AF9F": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docintakeapiDocIntakeUsagePlanUsagePlanKeyResourceInitStackdocintakeapiApiKeyA044AF9F72403BA8"
+          }
+        ],
+        "/InitStack/doc-intake-api/ApiKey/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docintakeapiApiKey76FA0A6C"
+          }
+        ],
+        "/InitStack/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/InitStack/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/InitStack/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/InitStack/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "InitStack"
+    }
+  }
+}

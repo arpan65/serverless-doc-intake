@@ -1,0 +1,655 @@
+{
+ "Resources": {
+  "docintakebucket7A9CA393": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketName": "loss-intake-bucket-non-prod",
+    "PublicAccessBlockConfiguration": {
+     "BlockPublicAcls": true,
+     "BlockPublicPolicy": true,
+     "IgnorePublicAcls": true,
+     "RestrictPublicBuckets": true
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "InitStack/doc-intake-bucket/Resource"
+   }
+  },
+  "docuploadrole54E89873": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     },
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "RoleName": "lambda-doc-upload-role"
+   },
+   "Metadata": {
+    "aws:cdk:path": "InitStack/doc-upload-role/Resource"
+   }
+  },
+  "docuploadroleDefaultPolicyBA65F4AA": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:*",
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "docuploadroleDefaultPolicyBA65F4AA",
+    "Roles": [
+     {
+      "Ref": "docuploadrole54E89873"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "InitStack/doc-upload-role/DefaultPolicy/Resource"
+   }
+  },
+  "docuploadlambda1289EE69": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "a57ee8bc5f1d49627f12b7832365cf14d4a101edc9078fc5fbbcaba286730081.zip"
+    },
+    "Role": {
+     "Fn::GetAtt": [
+      "docuploadrole54E89873",
+      "Arn"
+     ]
+    },
+    "Environment": {
+     "Variables": {
+      "S3_BUCKET_NAME": {
+       "Ref": "docintakebucket7A9CA393"
+      }
+     }
+    },
+    "FunctionName": "doc-upload-lambda",
+    "Handler": "doc_upload.execute",
+    "Runtime": "python3.9"
+   },
+   "DependsOn": [
+    "docuploadroleDefaultPolicyBA65F4AA",
+    "docuploadrole54E89873"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "InitStack/doc-upload-lambda/Resource",
+    "aws:asset:path": "asset.a57ee8bc5f1d49627f12b7832365cf14d4a101edc9078fc5fbbcaba286730081",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "docintakeapi712103E8": {
+   "Type": "AWS::ApiGateway::RestApi",
+   "Properties": {
+    "Name": "doc-intake-api"
+   },
+   "Metadata": {
+    "aws:cdk:path": "InitStack/doc-intake-api/Resource"
+   }
+  },
+  "docintakeapiDeploymentF48461DA54c91c721c560af9bd1aeb8989045ad8": {
+   "Type": "AWS::ApiGateway::Deployment",
+   "Properties": {
+    "RestApiId": {
+     "Ref": "docintakeapi712103E8"
+    },
+    "Description": "Automatically created by the RestApi construct"
+   },
+   "DependsOn": [
+    "docintakeapiv1DE1BDEB5",
+    "docintakeapiv1uploadPOSTFF4FB0F0",
+    "docintakeapiv1upload6435CA45"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "InitStack/doc-intake-api/Deployment/Resource"
+   }
+  },
+  "docintakeapiDeploymentStagedev2EEE2380": {
+   "Type": "AWS::ApiGateway::Stage",
+   "Properties": {
+    "RestApiId": {
+     "Ref": "docintakeapi712103E8"
+    },
+    "DeploymentId": {
+     "Ref": "docintakeapiDeploymentF48461DA54c91c721c560af9bd1aeb8989045ad8"
+    },
+    "StageName": "dev"
+   },
+   "Metadata": {
+    "aws:cdk:path": "InitStack/doc-intake-api/DeploymentStage.dev/Resource"
+   }
+  },
+  "docintakeapiv1DE1BDEB5": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "docintakeapi712103E8",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "v1",
+    "RestApiId": {
+     "Ref": "docintakeapi712103E8"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "InitStack/doc-intake-api/Default/v1/Resource"
+   }
+  },
+  "docintakeapiv1upload6435CA45": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "docintakeapiv1DE1BDEB5"
+    },
+    "PathPart": "upload",
+    "RestApiId": {
+     "Ref": "docintakeapi712103E8"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "InitStack/doc-intake-api/Default/v1/upload/Resource"
+   }
+  },
+  "docintakeapiv1uploadPOSTApiPermissionInitStackdocintakeapi512A6CBDPOSTv1uploadECD603C2": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "docuploadlambda1289EE69",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "docintakeapi712103E8"
+       },
+       "/",
+       {
+        "Ref": "docintakeapiDeploymentStagedev2EEE2380"
+       },
+       "/POST/v1/upload"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "InitStack/doc-intake-api/Default/v1/upload/POST/ApiPermission.InitStackdocintakeapi512A6CBD.POST..v1.upload"
+   }
+  },
+  "docintakeapiv1uploadPOSTApiPermissionTestInitStackdocintakeapi512A6CBDPOSTv1upload16298897": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "docuploadlambda1289EE69",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "docintakeapi712103E8"
+       },
+       "/test-invoke-stage/POST/v1/upload"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "InitStack/doc-intake-api/Default/v1/upload/POST/ApiPermission.Test.InitStackdocintakeapi512A6CBD.POST..v1.upload"
+   }
+  },
+  "docintakeapiv1uploadPOSTFF4FB0F0": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "HttpMethod": "POST",
+    "ResourceId": {
+     "Ref": "docintakeapiv1upload6435CA45"
+    },
+    "RestApiId": {
+     "Ref": "docintakeapi712103E8"
+    },
+    "ApiKeyRequired": true,
+    "AuthorizationType": "NONE",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "docuploadlambda1289EE69",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "InitStack/doc-intake-api/Default/v1/upload/POST/Resource"
+   }
+  },
+  "docintakeapiDocIntakeUsagePlan53542426": {
+   "Type": "AWS::ApiGateway::UsagePlan",
+   "Properties": {
+    "ApiStages": [
+     {
+      "ApiId": {
+       "Ref": "docintakeapi712103E8"
+      },
+      "Stage": {
+       "Ref": "docintakeapiDeploymentStagedev2EEE2380"
+      },
+      "Throttle": {}
+     }
+    ],
+    "Throttle": {
+     "BurstLimit": 2,
+     "RateLimit": 10
+    },
+    "UsagePlanName": "doc-intake-usage-plan"
+   },
+   "Metadata": {
+    "aws:cdk:path": "InitStack/doc-intake-api/DocIntakeUsagePlan/Resource"
+   }
+  },
+  "docintakeapiDocIntakeUsagePlanUsagePlanKeyResourceInitStackdocintakeapiApiKeyA044AF9F72403BA8": {
+   "Type": "AWS::ApiGateway::UsagePlanKey",
+   "Properties": {
+    "KeyId": {
+     "Ref": "docintakeapiApiKey76FA0A6C"
+    },
+    "KeyType": "API_KEY",
+    "UsagePlanId": {
+     "Ref": "docintakeapiDocIntakeUsagePlan53542426"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "InitStack/doc-intake-api/DocIntakeUsagePlan/UsagePlanKeyResource:InitStackdocintakeapiApiKeyA044AF9F"
+   }
+  },
+  "docintakeapiApiKey76FA0A6C": {
+   "Type": "AWS::ApiGateway::ApiKey",
+   "Properties": {
+    "Enabled": true,
+    "StageKeys": [
+     {
+      "RestApiId": {
+       "Ref": "docintakeapi712103E8"
+      },
+      "StageName": {
+       "Ref": "docintakeapiDeploymentStagedev2EEE2380"
+      }
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "InitStack/doc-intake-api/ApiKey/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/22RT0/DMAzFPwv3NFA2cd+GuCC0aojzlKWm85omVe1sqqp+d/KnQkPi9H7PTuJn5VmuS/n0oG5U6LotDJ7k9MlKtyKUjhOt5LT1ugUWu2+7UJatIpgFqk5OB2cg9pNWzqAeo800C6O6U63k9OatZnQ29u65gqFDouBmQaujIgImuYkiVI+NYripMYwB4k2PadKCr9AbN3ZgU747F3ZoUqYM4bzzg4YY+tcsD2X+AD67OpYW+qJwsTIqRfzfvMMoQooooZxpnkVKHueibWJj77n3/Gda4J2zNXJa2roa5IUer+WLLNfhOy6EWAzeMnYgD1l/AHNqvr+qAQAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "InitStack/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Outputs": {
+  "docintakeapiEndpoint7384FAE0": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "docintakeapi712103E8"
+      },
+      ".execute-api.",
+      {
+       "Ref": "AWS::Region"
+      },
+      ".",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "docintakeapiDeploymentStagedev2EEE2380"
+      },
+      "/"
+     ]
+    ]
+   }
+  }
+ },
+ "Conditions": {
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-2"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
