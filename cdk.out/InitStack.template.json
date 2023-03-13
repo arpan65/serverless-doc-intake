@@ -17,6 +17,41 @@
     "aws:cdk:path": "InitStack/doc-intake-bucket/Resource"
    }
   },
+  "invoiceextract937513BA": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "KeySchema": [
+     {
+      "AttributeName": "policy_id",
+      "KeyType": "HASH"
+     },
+     {
+      "AttributeName": "invoice_id",
+      "KeyType": "RANGE"
+     }
+    ],
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "policy_id",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "invoice_id",
+      "AttributeType": "S"
+     }
+    ],
+    "ProvisionedThroughput": {
+     "ReadCapacityUnits": 5,
+     "WriteCapacityUnits": 5
+    },
+    "TableName": "invoice-extract-table"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "InitStack/invoice-extract/Resource"
+   }
+  },
   "docuploadrole54E89873": {
    "Type": "AWS::IAM::Role",
    "Properties": {
@@ -54,6 +89,30 @@
          "Ref": "AWS::Partition"
         },
         ":iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+       ]
+      ]
+     },
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/AmazonS3ReadOnlyAccess"
+       ]
+      ]
+     },
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/AmazonTextractFullAccess"
        ]
       ]
      }
@@ -95,7 +154,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
      },
-     "S3Key": "a57ee8bc5f1d49627f12b7832365cf14d4a101edc9078fc5fbbcaba286730081.zip"
+     "S3Key": "3a64f05619057a1cac19ec61e55632b785655c201ab31e58bf4d1d28119dbe92.zip"
     },
     "Role": {
      "Fn::GetAtt": [
@@ -120,7 +179,81 @@
    ],
    "Metadata": {
     "aws:cdk:path": "InitStack/doc-upload-lambda/Resource",
-    "aws:asset:path": "asset.a57ee8bc5f1d49627f12b7832365cf14d4a101edc9078fc5fbbcaba286730081",
+    "aws:asset:path": "asset.3a64f05619057a1cac19ec61e55632b785655c201ab31e58bf4d1d28119dbe92",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "docextractorlambda747BE777": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "3a64f05619057a1cac19ec61e55632b785655c201ab31e58bf4d1d28119dbe92.zip"
+    },
+    "Role": {
+     "Fn::GetAtt": [
+      "docuploadrole54E89873",
+      "Arn"
+     ]
+    },
+    "Environment": {
+     "Variables": {
+      "S3_BUCKET_NAME": {
+       "Ref": "docintakebucket7A9CA393"
+      }
+     }
+    },
+    "FunctionName": "doc-extractor-lambda",
+    "Handler": "info_extractor.execute",
+    "Runtime": "python3.9"
+   },
+   "DependsOn": [
+    "docuploadroleDefaultPolicyBA65F4AA",
+    "docuploadrole54E89873"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "InitStack/doc-extractor-lambda/Resource",
+    "aws:asset:path": "asset.3a64f05619057a1cac19ec61e55632b785655c201ab31e58bf4d1d28119dbe92",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "dbupdatehandlerlambda830C80DA": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "3a64f05619057a1cac19ec61e55632b785655c201ab31e58bf4d1d28119dbe92.zip"
+    },
+    "Role": {
+     "Fn::GetAtt": [
+      "docuploadrole54E89873",
+      "Arn"
+     ]
+    },
+    "Environment": {
+     "Variables": {
+      "TABLE_NAME": {
+       "Ref": "invoiceextract937513BA"
+      }
+     }
+    },
+    "FunctionName": "db-update-handler-lambda",
+    "Handler": "db_update.execute",
+    "Runtime": "python3.9"
+   },
+   "DependsOn": [
+    "docuploadroleDefaultPolicyBA65F4AA",
+    "docuploadrole54E89873"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "InitStack/db-update-handler-lambda/Resource",
+    "aws:asset:path": "asset.3a64f05619057a1cac19ec61e55632b785655c201ab31e58bf4d1d28119dbe92",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Code"
    }
@@ -385,10 +518,156 @@
     "aws:cdk:path": "InitStack/doc-intake-api/ApiKey/Resource"
    }
   },
+  "docProcessorStateMachineRole292FEB76": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": {
+         "Fn::Join": [
+          "",
+          [
+           "states.",
+           {
+            "Ref": "AWS::Region"
+           },
+           ".amazonaws.com"
+          ]
+         ]
+        }
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "InitStack/docProcessorStateMachine/Role/Resource"
+   }
+  },
+  "docProcessorStateMachineRoleDefaultPolicyA278D2DC": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "lambda:InvokeFunction",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "docextractorlambda747BE777",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "docextractorlambda747BE777",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "docProcessorStateMachineRoleDefaultPolicyA278D2DC",
+    "Roles": [
+     {
+      "Ref": "docProcessorStateMachineRole292FEB76"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "InitStack/docProcessorStateMachine/Role/DefaultPolicy/Resource"
+   }
+  },
+  "docProcessorStateMachineE2D0070F": {
+   "Type": "AWS::StepFunctions::StateMachine",
+   "Properties": {
+    "RoleArn": {
+     "Fn::GetAtt": [
+      "docProcessorStateMachineRole292FEB76",
+      "Arn"
+     ]
+    },
+    "DefinitionString": {
+     "Fn::Join": [
+      "",
+      [
+       "{\"StartAt\":\"docExtractTask\",\"States\":{\"docExtractTask\":{\"Next\":\"dbUpdateTask\",\"Retry\":[{\"ErrorEquals\":[\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2},{\"ErrorEquals\":[\"Lambda.Unknown\",\"States.Timeout\"],\"MaxAttempts\":5,\"BackoffRate\":1}],\"Catch\":[{\"ErrorEquals\":[\"States.ALL\"],\"ResultPath\":\"$.error_Payload\",\"Next\":\"docExtractErrorHandlingTask\"}],\"Type\":\"Task\",\"TimeoutSeconds\":20,\"InputPath\":\"$\",\"Resource\":\"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":states:::lambda:invoke\",\"Parameters\":{\"FunctionName\":\"",
+       {
+        "Fn::GetAtt": [
+         "docextractorlambda747BE777",
+         "Arn"
+        ]
+       },
+       "\",\"Payload.$\":\"$\"}},\"dbUpdateTask\":{\"End\":true,\"Retry\":[{\"ErrorEquals\":[\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2},{\"ErrorEquals\":[\"Lambda.Unknown\",\"States.Timeout\"],\"MaxAttempts\":5,\"BackoffRate\":1}],\"Catch\":[{\"ErrorEquals\":[\"States.ALL\"],\"ResultPath\":\"$.error_Payload\",\"Next\":\"dbUpdateErrorHandlingTask\"}],\"Type\":\"Task\",\"TimeoutSeconds\":20,\"InputPath\":\"$\",\"Resource\":\"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":states:::lambda:invoke\",\"Parameters\":{\"FunctionName\":\"",
+       {
+        "Fn::GetAtt": [
+         "docextractorlambda747BE777",
+         "Arn"
+        ]
+       },
+       "\",\"Payload.$\":\"$\"}},\"dbUpdateErrorHandlingTask\":{\"End\":true,\"Retry\":[{\"ErrorEquals\":[\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2}],\"Type\":\"Task\",\"TimeoutSeconds\":20,\"InputPath\":\"$\",\"Resource\":\"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":states:::lambda:invoke\",\"Parameters\":{\"FunctionName\":\"",
+       {
+        "Fn::GetAtt": [
+         "docextractorlambda747BE777",
+         "Arn"
+        ]
+       },
+       "\",\"Payload.$\":\"$\"}},\"docExtractErrorHandlingTask\":{\"End\":true,\"Retry\":[{\"ErrorEquals\":[\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2}],\"Type\":\"Task\",\"TimeoutSeconds\":20,\"InputPath\":\"$\",\"Resource\":\"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":states:::lambda:invoke\",\"Parameters\":{\"FunctionName\":\"",
+       {
+        "Fn::GetAtt": [
+         "docextractorlambda747BE777",
+         "Arn"
+        ]
+       },
+       "\",\"Payload.$\":\"$\"}}},\"TimeoutSeconds\":20}"
+      ]
+     ]
+    }
+   },
+   "DependsOn": [
+    "docProcessorStateMachineRoleDefaultPolicyA278D2DC",
+    "docProcessorStateMachineRole292FEB76"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "InitStack/docProcessorStateMachine/Resource"
+   }
+  },
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/22RT0/DMAzFPwv3NFA2cd+GuCC0aojzlKWm85omVe1sqqp+d/KnQkPi9H7PTuJn5VmuS/n0oG5U6LotDJ7k9MlKtyKUjhOt5LT1ugUWu2+7UJatIpgFqk5OB2cg9pNWzqAeo800C6O6U63k9OatZnQ29u65gqFDouBmQaujIgImuYkiVI+NYripMYwB4k2PadKCr9AbN3ZgU747F3ZoUqYM4bzzg4YY+tcsD2X+AD67OpYW+qJwsTIqRfzfvMMoQooooZxpnkVKHueibWJj77n3/Gda4J2zNXJa2roa5IUer+WLLNfhOy6EWAzeMnYgD1l/AHNqvr+qAQAA"
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/22R3W7CMAyFn2X3IVsH2j0wTZo2NMS2a2QSU0LbpKpdUFX13ZefjoG0K3/HdZpznEc5y+TDHZxponQxKc1O9p8MqhC+te1pKvtFqwpksdzbkVJZAOEgdGehctqf+oJdiWEqwiAMVLLfuNSLde1Ko7ogEw2ihGqnQfYvrVVsnA3frnmNTWWIvBoETbdAhExyHoqA2uTAeIbOX4PE89rEm0Z8xrp0XYU2Or9SPl0ePSXw865tFIY4FzH+KPEK+eB0aI30Tf7guoRo8X/xhp3wLkLx7UQ+AmO9H+PRloEKku9xBa/25Aq8HYgPwbgCdTD21/FFD8Of27iQEMfYPMx9tFy3fBPC89JZbTju0jqN8kj3p+xJZjP//kcyZtK0lk2FcpPqDwKVzSwbAgAA"
    },
    "Metadata": {
     "aws:cdk:path": "InitStack/CDKMetadata/Default"

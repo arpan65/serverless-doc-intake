@@ -24,36 +24,24 @@ def print_labels_and_values(field):
 
 def execute(event,context):
     s3_bucket=S3_BUCKET_NAME
-    s3_key="invoice2.png"
-    
+    s3_key=event['key']
     s3_connection=boto3.resource('s3')
-    s3_object=s3_connection.Object(s3_bucket,s3_key)
+    s3_object=s3_connection.object(s3_bucket,s3_key)
     s3_response=s3_object.get()
     textract=boto3.client('textract')
     stream=io.BytesIO(s3_response['Body'].read())
     image_binary=stream.getvalue()
     response=textract.analyze_expense(Document={'Bytes':image_binary})
     #Document={'S3Object': {'Bucket': bucket, 'Name': document}}
-    expense,summary=dict(),dict()
-    item_counter=desc_counter=amount_counter=1
+    expense,summary=[],[]
     for expense_doc in response["ExpenseDocuments"]:
         for line_item_group in expense_doc["LineItemGroups"]:
             for line_items in line_item_group["LineItems"]:
                 for expense_fields in line_items["LineItemExpenseFields"]:
-                    labels_values=print_labels_and_values(expense_fields)
-                    if "key" in labels_values and labels_values["key"]=="ITEM":
-                        expense["ITEM_"+str(item_counter)]=labels_values["value"]
-                        item_counter+=1
-                    elif "key" in labels_values and labels_values["key"]=="DESCRIPTION":
-                        expense["DESCRIPTION_"+str(desc_counter)]=labels_values["value"]
-                        desc_counter+=1    
-                    elif "key" in labels_values and labels_values["key"]=="PRICE":
-                        expense["PRICE_"+str(amount_counter)]=labels_values["value"]
-                        amount_counter+=1      
+                    expense.append(print_labels_and_values(expense_fields))
+        
     for summary_field in expense_doc["SummaryFields"]:
-        labels_values=print_labels_and_values(summary_field)
-        if "key" in labels_values:
-            summary[labels_values["key"]]=labels_values["value"]
+        summary.append(print_labels_and_values(summary_field))
     response = {
         "statusCode": 200,
         "headers": {

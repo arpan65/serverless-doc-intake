@@ -23,7 +23,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/2e6ee42b80e42e8cb941495d36eef311401e4f30d53c2259d5d41d7e32ffa1f9.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/5004cdaf87bddc46a57528ffb5f24c6fad804a7e7b0e6ef4f57a49d987b431ba.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -45,6 +45,20 @@
             "data": "docintakebucket7A9CA393"
           }
         ],
+        "/InitStack/invoice-extract": [
+          {
+            "type": "aws:cdk:hasPhysicalName",
+            "data": {
+              "Ref": "invoiceextract937513BA"
+            }
+          }
+        ],
+        "/InitStack/invoice-extract/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "invoiceextract937513BA"
+          }
+        ],
         "/InitStack/doc-upload-role/Resource": [
           {
             "type": "aws:cdk:logicalId",
@@ -61,6 +75,18 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "docuploadlambda1289EE69"
+          }
+        ],
+        "/InitStack/doc-extractor-lambda/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docextractorlambda747BE777"
+          }
+        ],
+        "/InitStack/db-update-handler-lambda/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "dbupdatehandlerlambda830C80DA"
           }
         ],
         "/InitStack/doc-intake-api/Resource": [
@@ -133,6 +159,24 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "docintakeapiApiKey76FA0A6C"
+          }
+        ],
+        "/InitStack/docProcessorStateMachine/Role/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docProcessorStateMachineRole292FEB76"
+          }
+        ],
+        "/InitStack/docProcessorStateMachine/Role/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docProcessorStateMachineRoleDefaultPolicyA278D2DC"
+          }
+        ],
+        "/InitStack/docProcessorStateMachine/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "docProcessorStateMachineE2D0070F"
           }
         ],
         "/InitStack/CDKMetadata/Default": [

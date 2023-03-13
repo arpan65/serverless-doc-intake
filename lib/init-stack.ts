@@ -66,9 +66,9 @@ export class InitStack extends Stack {
   }))
 
   const docExtractorlambdaRole=lambdabasicRole
-  // add permission to upload files to the bucket
-  docExtractorlambdaRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName("service-role/AmazonS3ReadOnlyAccess"))
-  docExtractorlambdaRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName("service-role/AmazonTextractFullAccess"))
+  // add permission to upload files to the bucket arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess 
+  docExtractorlambdaRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName("AmazonS3ReadOnlyAccess"))
+  docExtractorlambdaRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName("AmazonTextractFullAccess"))
 
   // create a lambda function to upload files to S3
   const docuploadLambda = new lambda.Function(this,'doc-upload-lambda',{
@@ -86,7 +86,7 @@ export class InitStack extends Stack {
 const docExtractorLambda = new lambda.Function(this,'doc-extractor-lambda',{
   functionName:"doc-extractor-lambda",
   runtime:Runtime.PYTHON_3_9,
-  handler:"doc_extractor.execute",
+  handler:"info_extractor.execute",
   code:Code.fromAsset(path.join(__dirname,'./functions')),
   role:docExtractorlambdaRole,
   environment:{
@@ -130,7 +130,7 @@ const dbUpdateHandlerLambda = new lambda.Function(this,'db-update-handler-lambda
   const retryProps={
     intervalSeconds:10,
     maxAttempts:5,
-    backoffRate:0.3,
+    backoffRate:1.0,
     errors:['Lambda.Unknown','States.Timeout']
   }
   const catchProps={
