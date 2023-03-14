@@ -22,21 +22,21 @@
    "Properties": {
     "KeySchema": [
      {
-      "AttributeName": "policy_id",
+      "AttributeName": "invoice_id",
       "KeyType": "HASH"
      },
      {
-      "AttributeName": "invoice_id",
+      "AttributeName": "claim_no",
       "KeyType": "RANGE"
      }
     ],
     "AttributeDefinitions": [
      {
-      "AttributeName": "policy_id",
+      "AttributeName": "invoice_id",
       "AttributeType": "S"
      },
      {
-      "AttributeName": "invoice_id",
+      "AttributeName": "claim_no",
       "AttributeType": "S"
      }
     ],
@@ -132,6 +132,34 @@
        "Action": "s3:*",
        "Effect": "Allow",
        "Resource": "*"
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable",
+        "dynamodb:GetItem",
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator",
+        "dynamodb:PutItem",
+        "dynamodb:Query",
+        "dynamodb:Scan",
+        "dynamodb:UpdateItem"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "invoiceextract937513BA",
+          "Arn"
+         ]
+        },
+        {
+         "Ref": "AWS::NoValue"
+        }
+       ]
       }
      ],
      "Version": "2012-10-17"
@@ -154,7 +182,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
      },
-     "S3Key": "3a64f05619057a1cac19ec61e55632b785655c201ab31e58bf4d1d28119dbe92.zip"
+     "S3Key": "49f0d8eb40bf75b65f0db272ffe8e3bad703625e7a56abdd8a4ca4dfe9787216.zip"
     },
     "Role": {
      "Fn::GetAtt": [
@@ -166,6 +194,9 @@
      "Variables": {
       "S3_BUCKET_NAME": {
        "Ref": "docintakebucket7A9CA393"
+      },
+      "TABLE_NAME": {
+       "Ref": "invoiceextract937513BA"
       }
      }
     },
@@ -179,7 +210,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "InitStack/doc-upload-lambda/Resource",
-    "aws:asset:path": "asset.3a64f05619057a1cac19ec61e55632b785655c201ab31e58bf4d1d28119dbe92",
+    "aws:asset:path": "asset.49f0d8eb40bf75b65f0db272ffe8e3bad703625e7a56abdd8a4ca4dfe9787216",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Code"
    }
@@ -191,7 +222,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
      },
-     "S3Key": "3a64f05619057a1cac19ec61e55632b785655c201ab31e58bf4d1d28119dbe92.zip"
+     "S3Key": "49f0d8eb40bf75b65f0db272ffe8e3bad703625e7a56abdd8a4ca4dfe9787216.zip"
     },
     "Role": {
      "Fn::GetAtt": [
@@ -216,7 +247,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "InitStack/doc-extractor-lambda/Resource",
-    "aws:asset:path": "asset.3a64f05619057a1cac19ec61e55632b785655c201ab31e58bf4d1d28119dbe92",
+    "aws:asset:path": "asset.49f0d8eb40bf75b65f0db272ffe8e3bad703625e7a56abdd8a4ca4dfe9787216",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Code"
    }
@@ -228,7 +259,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
      },
-     "S3Key": "3a64f05619057a1cac19ec61e55632b785655c201ab31e58bf4d1d28119dbe92.zip"
+     "S3Key": "49f0d8eb40bf75b65f0db272ffe8e3bad703625e7a56abdd8a4ca4dfe9787216.zip"
     },
     "Role": {
      "Fn::GetAtt": [
@@ -253,7 +284,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "InitStack/db-update-handler-lambda/Resource",
-    "aws:asset:path": "asset.3a64f05619057a1cac19ec61e55632b785655c201ab31e58bf4d1d28119dbe92",
+    "aws:asset:path": "asset.49f0d8eb40bf75b65f0db272ffe8e3bad703625e7a56abdd8a4ca4dfe9787216",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Code"
    }
@@ -560,8 +591,28 @@
        "Resource": [
         {
          "Fn::GetAtt": [
+          "dbupdatehandlerlambda830C80DA",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::GetAtt": [
           "docextractorlambda747BE777",
           "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "dbupdatehandlerlambda830C80DA",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
          ]
         },
         {
@@ -625,7 +676,7 @@
        ":states:::lambda:invoke\",\"Parameters\":{\"FunctionName\":\"",
        {
         "Fn::GetAtt": [
-         "docextractorlambda747BE777",
+         "dbupdatehandlerlambda830C80DA",
          "Arn"
         ]
        },

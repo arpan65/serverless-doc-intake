@@ -8,22 +8,20 @@ TABLE_NAME=os.getenv("TABLE_NAME")
 
 def execute(event, context):
     # read extracted data from previous state
-    claim_no=event['Payload']['claim_no']
-    file_name=event['Payload']['file_name']
-    expense=event['Payload']['expense']
-    summary=event['Payload']['summary']
+    claim_no=event['claim_no']
+    file_name=event['file_name']
+    expense=event['expense']
+    summary=event['summary']
     
     # Connect to DynamoDB
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table(TABLE_NAME)
+    table_name = 'example_table'
+    table = dynamodb.Table(table_name)
     
     # Data to update
     item_key = {
-        'invoice_id': str(claim_no)+'_'+str(file_name),
-        'claim_no':claim_no
-        
+        'invoice_id': str(claim_no)+'_'+str(file_name)
     }
-
     update_expression = 'SET expense = :expense, summary = :summary'
     expression_attribute_values = {
         ':expense': expense,

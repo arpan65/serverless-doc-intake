@@ -19,7 +19,7 @@ def execute(event, context):
     table = dynamodb.Table(TABLE_NAME)
     # Get data from event
     item_data = {
-        "claim_no":claim_no,
+        "claim_id":claim_no,
         "invoice_id":str(claim_no)+'_'+str(file_name),
         "file_name":file_name
     }

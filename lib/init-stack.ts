@@ -39,8 +39,8 @@ export class InitStack extends Stack {
   
   // creating the destination table to hold extracted data 
   const invoiceTable=new dynamodb.Table(this,'invoice-extract',{
-    partitionKey :{name:"policy_id",type:dynamodb.AttributeType.STRING},
-    sortKey:{name:"invoice_id",type:dynamodb.AttributeType.STRING},
+    partitionKey :{name:"invoice_id",type:dynamodb.AttributeType.STRING},
+    sortKey:{name:"claim_no",type:dynamodb.AttributeType.STRING},
     tableName:"invoice-extract-table",
     removalPolicy:RemovalPolicy.DESTROY
   })
@@ -78,10 +78,12 @@ export class InitStack extends Stack {
     code:Code.fromAsset(path.join(__dirname,'./functions')),
     role:docUploadlambdaRole,
     environment:{
-      "S3_BUCKET_NAME":docIntakeBucket.bucketName
+      "S3_BUCKET_NAME":docIntakeBucket.bucketName,
+      "TABLE_NAME":invoiceTable.tableName
     }
   })
-  
+  invoiceTable.grantReadWriteData(docUploadlambdaRole)
+
 // create a lambda function to upload files to S3
 const docExtractorLambda = new lambda.Function(this,'doc-extractor-lambda',{
   functionName:"doc-extractor-lambda",
@@ -100,11 +102,12 @@ const dbUpdateHandlerLambda = new lambda.Function(this,'db-update-handler-lambda
   runtime:Runtime.PYTHON_3_9,
   handler:"db_update.execute",
   code:Code.fromAsset(path.join(__dirname,'./functions')),
-  role:docExtractorlambdaRole,
+  role:docUploadlambdaRole,
   environment:{
     "TABLE_NAME":invoiceTable.tableName
   }
 })
+invoiceTable.grantReadWriteData(docUploadlambdaRole)
   // REST Api resource
   const docIntakeApi = new RestApi(this, 'doc-intake-api',{deployOptions:{stageName:"dev"}});
   
@@ -158,7 +161,7 @@ const dbUpdateHandlerLambda = new lambda.Function(this,'db-update-handler-lambda
   docExtractTask.addRetry(retryProps)
 
   const dbUpdateTask =new LambdaInvoke(this,'dbUpdateTask',{
-    lambdaFunction:docExtractorLambda,
+    lambdaFunction:dbUpdateHandlerLambda,
     inputPath:"$",
     timeout:Duration.seconds(20)
   })

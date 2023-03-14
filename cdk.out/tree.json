@@ -58,21 +58,21 @@
                   "aws:cdk:cloudformation:props": {
                     "keySchema": [
                       {
-                        "attributeName": "policy_id",
+                        "attributeName": "invoice_id",
                         "keyType": "HASH"
                       },
                       {
-                        "attributeName": "invoice_id",
+                        "attributeName": "claim_no",
                         "keyType": "RANGE"
                       }
                     ],
                     "attributeDefinitions": [
                       {
-                        "attributeName": "policy_id",
+                        "attributeName": "invoice_id",
                         "attributeType": "S"
                       },
                       {
-                        "attributeName": "invoice_id",
+                        "attributeName": "claim_no",
                         "attributeType": "S"
                       }
                     ],
@@ -198,6 +198,34 @@
                               "Action": "s3:*",
                               "Effect": "Allow",
                               "Resource": "*"
+                            },
+                            {
+                              "Action": [
+                                "dynamodb:BatchGetItem",
+                                "dynamodb:BatchWriteItem",
+                                "dynamodb:ConditionCheckItem",
+                                "dynamodb:DeleteItem",
+                                "dynamodb:DescribeTable",
+                                "dynamodb:GetItem",
+                                "dynamodb:GetRecords",
+                                "dynamodb:GetShardIterator",
+                                "dynamodb:PutItem",
+                                "dynamodb:Query",
+                                "dynamodb:Scan",
+                                "dynamodb:UpdateItem"
+                              ],
+                              "Effect": "Allow",
+                              "Resource": [
+                                {
+                                  "Fn::GetAtt": [
+                                    "invoiceextract937513BA",
+                                    "Arn"
+                                  ]
+                                },
+                                {
+                                  "Ref": "AWS::NoValue"
+                                }
+                              ]
                             }
                           ],
                           "Version": "2012-10-17"
@@ -267,7 +295,7 @@
                       "s3Bucket": {
                         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                       },
-                      "s3Key": "3a64f05619057a1cac19ec61e55632b785655c201ab31e58bf4d1d28119dbe92.zip"
+                      "s3Key": "49f0d8eb40bf75b65f0db272ffe8e3bad703625e7a56abdd8a4ca4dfe9787216.zip"
                     },
                     "role": {
                       "Fn::GetAtt": [
@@ -279,6 +307,9 @@
                       "variables": {
                         "S3_BUCKET_NAME": {
                           "Ref": "docintakebucket7A9CA393"
+                        },
+                        "TABLE_NAME": {
+                          "Ref": "invoiceextract937513BA"
                         }
                       }
                     },
@@ -338,7 +369,7 @@
                       "s3Bucket": {
                         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                       },
-                      "s3Key": "3a64f05619057a1cac19ec61e55632b785655c201ab31e58bf4d1d28119dbe92.zip"
+                      "s3Key": "49f0d8eb40bf75b65f0db272ffe8e3bad703625e7a56abdd8a4ca4dfe9787216.zip"
                     },
                     "role": {
                       "Fn::GetAtt": [
@@ -409,7 +440,7 @@
                       "s3Bucket": {
                         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                       },
-                      "s3Key": "3a64f05619057a1cac19ec61e55632b785655c201ab31e58bf4d1d28119dbe92.zip"
+                      "s3Key": "49f0d8eb40bf75b65f0db272ffe8e3bad703625e7a56abdd8a4ca4dfe9787216.zip"
                     },
                     "role": {
                       "Fn::GetAtt": [
@@ -942,8 +973,28 @@
                                   "Resource": [
                                     {
                                       "Fn::GetAtt": [
+                                        "dbupdatehandlerlambda830C80DA",
+                                        "Arn"
+                                      ]
+                                    },
+                                    {
+                                      "Fn::GetAtt": [
                                         "docextractorlambda747BE777",
                                         "Arn"
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::GetAtt": [
+                                              "dbupdatehandlerlambda830C80DA",
+                                              "Arn"
+                                            ]
+                                          },
+                                          ":*"
+                                        ]
                                       ]
                                     },
                                     {
@@ -1024,7 +1075,7 @@
                           ":states:::lambda:invoke\",\"Parameters\":{\"FunctionName\":\"",
                           {
                             "Fn::GetAtt": [
-                              "docextractorlambda747BE777",
+                              "dbupdatehandlerlambda830C80DA",
                               "Arn"
                             ]
                           },
